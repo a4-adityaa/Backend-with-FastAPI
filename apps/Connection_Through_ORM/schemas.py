@@ -16,6 +16,7 @@ class PostCreate(PostBase):
 class Post(PostBase): # inherited from PostBase
     id: int
     created_at: datetime
+    owner_id: int
     class Config:
         orm_mode = True
 
@@ -40,4 +41,4 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    id: Optional[str] = None
+    id: Optional[int] = None
