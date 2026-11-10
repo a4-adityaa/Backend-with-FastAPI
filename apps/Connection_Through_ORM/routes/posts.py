@@ -11,9 +11,9 @@ router = APIRouter(
 
 
 @router.get("/", response_model=List[schemas.Post])
-def get_posts(db: Session= Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_posts(db: Session= Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int =10, skip:int=0, search: Optional[str]= ""):
     # posts = db.query(models.Post2).filter(models.Post2.owner_id == current_user.id).all() -> to make our post available only to you
-    posts = db.query(models.Post2).all()
+    posts = db.query(models.Post2).filter(models.Post2.title.contains(search)).limit(limit).offset(skip).all() # setting the limit of post and offset so that we can get better result
     return posts
 
 
