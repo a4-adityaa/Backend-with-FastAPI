@@ -13,6 +13,10 @@ def vote(vote: schemas.Vote, db: Session = Depends(database.get_db), current_use
     vote_query = db.query(models.Vote).filter(models.Vote.post_id == vote.post_id, models.Vote.user_id == current_user.id)
     found_vote = vote_query.first()
 
+    post = db.query(models.Post2).filter(models.Post2.id == vote.post_id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'post with id: {vote.post_id} does not exist.')
+
 
     if (vote.dir == 1):
         if found_vote:
