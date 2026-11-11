@@ -21,3 +21,8 @@ class Users(Base):
     email = Column(String, unique=True, nullable=False)
     password= Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),nullable=False,server_default=text('NOW()'))
+
+class Vote(Base):
+    __tablename__ = "votes"
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    post_id = Column(Integer, ForeignKey("post2.id", ondelete="CASCADE"), primary_key=True)
