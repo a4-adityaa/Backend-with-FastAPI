@@ -17,7 +17,7 @@ class UserOut(BaseModel):
     id: int
     email: EmailStr
     created_at: datetime
-    class config:
+    class Config:
         orm_mode = True
 
 class Post(PostBase): # inherited from PostBase
@@ -25,6 +25,13 @@ class Post(PostBase): # inherited from PostBase
     created_at: datetime
     owner_id: int
     owner: UserOut
+    class Config:
+        orm_mode = True
+
+class PostOut(BaseModel):
+    post: Post
+    votes: int
+
     class Config:
         orm_mode = True
 
