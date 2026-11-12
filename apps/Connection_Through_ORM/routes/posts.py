@@ -14,11 +14,11 @@ router = APIRouter(
 @router.get("/", response_model=List[schemas.PostOut])
 def get_posts(db: Session= Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int =10, skip:int=0, search: Optional[str]= ""):
     # posts = db.query(models.Post2).filter(models.Post2.owner_id == current_user.id).all() -> to make our post available only to you
-    posts = db.query(models.Post2).filter(models.Post2.title.contains(search)).limit(limit).offset(skip).all() # setting the limit of post and offset so that we can get better result
-
-    results = db.query(models.Post2, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post2.id, isouter=True).group_by(models.Post2.id).filter(models.Post2.title.contains(search)).limit(limit).offset(skip).all()
+    # posts = db.query(models.Post2).filter(models.Post2.title.contains(search)).limit(limit).offset(skip).all() # setting the limit of post and offset so that we can get better result
     
-    return [{"post": post, "votes": votes} for post, votes in results]
+    post = db.query(models.Post2, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post2.id, isouter=True).group_by(models.Post2.id).filter(models.Post2.title.contains(search)).limit(limit).offset(skip).all()
+    
+    return [{"post": post, "votes": votes} for post, votes in post] # returning each query as row
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
@@ -35,10 +35,11 @@ def createPosts(post: schemas.PostCreate, db: Session= Depends(get_db), current_
     
 
 # get post by id.
-@router.get("/{id}", response_model=schemas.Post)
+@router.get("/{id}", response_model=schemas.PostOut)
 def get_post(id: int, db: Session= Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
-    post = db.query(models.Post2).filter(models.Post2.id == id).first()
+    # post = db.query(models.Post2).filter(models.Post2.id == id).first()
+    post = db.query(models.Post2, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post2.id, isouter=True).group_by(models.Post2.id).filter(models.Post2.id == id).first()
 
     if not post:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail= f"post with id {id} not found")
@@ -47,7 +48,7 @@ def get_post(id: int, db: Session= Depends(get_db), current_user: int = Depends(
     # if post.owner_id != current_user.id:
                 # raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not autharized to perform requested action.")
     
-    return post
+    return {"post": post[0], "votes": post[1]}
 
 # delete a post
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
