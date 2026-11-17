@@ -1,5 +1,5 @@
 import pytest
-from apps.Connection_Through_ORM.calculations import add, subtract, multiply, divide
+from apps.Connection_Through_ORM.calculations import add, subtract, multiply, divide, BankAccount
 
 @pytest.mark.parametrize("num1, num2, expected", [
     (3, 6, 9),
@@ -19,3 +19,27 @@ def test_multiply():
 
 def test_divide():
     assert divide(20,5) ==4
+
+
+def test_bank_account_initial_amt():
+    bank_account = BankAccount(50)
+    assert bank_account.balance == 50
+
+def test_bank_default_amt():
+    bank_account = BankAccount()
+    assert bank_account.balance == 0
+
+def test_withdraw():
+    bank_account = BankAccount(50)
+    bank_account.withdraw(30)
+    assert bank_account.balance == 20
+
+def test_deposit_amount():
+    bank_account = BankAccount(50)
+    bank_account.deposit(50)
+    assert bank_account.balance == 100
+
+def test_collect_interest():
+    bank_account = BankAccount(50)
+    bank_account.collect_interest()
+    assert round(bank_account.balance,3) == 55
