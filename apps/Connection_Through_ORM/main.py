@@ -24,6 +24,6 @@ app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(vote.router)
 
-@app.get("/", status_code= status.HTTP_200)
+@app.get("/")
 async def root():
     return {"message": "Hey how are you?"}
