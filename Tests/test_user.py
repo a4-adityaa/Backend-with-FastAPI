@@ -1,44 +1,5 @@
-from fastapi.testclient import TestClient
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from apps.Connection_Through_ORM.main import app
-from apps.Connection_Through_ORM.main import app
-from sqlalchemy.ext.declarative import declarative_base
-from apps.Connection_Through_ORM.config import settings
 from apps.Connection_Through_ORM import schemas
-from apps.Connection_Through_ORM.database import get_db, Base
-
-
-SQLALCHEMY_DATABASE_URL = f'postgresql+psycopg2://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}_test'
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-@pytest.fixture
-def Session():
-    # run our code before we run our test
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-@pytest.fixture
-def client(Session):
-    def override_get_db():
-        try:
-            yield Session
-        finally:
-            Session.close()
-
-    app.dependency_overrides[get_db] = override_get_db
-    yield TestClient(app)
-
+from .test_database import client, Session
 
 
 def test_root(client):
@@ -48,7 +9,7 @@ def test_root(client):
     assert res.status_code == 200
 
 def test_create_user(client):
-    res = client.post("/users",json={"email":"aadi12334@gmail.com", "password":"aadi1234"})
+    res = client.post("/users/",json={"email":"aadi12334@gmail.com", "password":"aadi1234"})
     new_user = schemas.UserOut(**res.json())  # unpacking the new user data
     assert new_user.email == "aadi12334@gmail.com"
     assert res.status_code ==201
