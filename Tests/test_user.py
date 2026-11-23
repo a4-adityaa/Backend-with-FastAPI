@@ -26,7 +26,15 @@ def test_login_user(client, test_user):
     assert login_res.token_type == "bearer"
     assert res.status_code == 200
 
-def test_incorrent_user(test_user, client):
+
+@pytest.mark.parametrize("email, password, status_code", [
+    ('wrongpassword@gmail.com', 'password' ,403),
+    ('aditya@gmail.com', 'wrongpassword', 403),
+    ('wrongemail@gmail.com','wrongpassword', 403),
+    (None, 'password123', 422),
+    ('sanjeev@gmail.com', None, 422)
+])
+def test_incorrent_user(test_user, client, email, password, status_code):
     res = client.post("/login", data={"username": test_user['email'], "password": "WrongPassword"})
 
     assert res.status_code == 403
