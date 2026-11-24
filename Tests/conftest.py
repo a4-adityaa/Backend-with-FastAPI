@@ -6,6 +6,7 @@ from apps.Connection_Through_ORM.main import app
 from apps.Connection_Through_ORM.main import app
 from sqlalchemy.ext.declarative import declarative_base
 from apps.Connection_Through_ORM.config import settings
+from apps.Connection_Through_ORM import models
 from apps.Connection_Through_ORM.database import get_db, Base
 from apps.Connection_Through_ORM.oauth2 import create_access_token
 
@@ -63,3 +64,32 @@ def authorized_client(client, token):
         **client.headers, "Authorization": f"Bearer {token}"
     }
     return client
+
+@pytest.fixture
+def test_post(test_user, Session):
+    posts_data = [{
+        "title": "first title",
+        "content": "firtst content",
+        "owner_id": test_user['id']
+    },
+    {
+        "title": "second title",
+        "content": "second content",
+        "owner_id": test_user['id']
+    },
+    {
+        "title": "third title",
+        "content": "third content",
+        "owner_id": test_user['id']
+    }]
+
+    def create_post_model(post):
+        return models.Post2(**post)
+
+    post_map = map(create_post_model, posts_data)
+    posts = list(post_map)
+    Session.add_all(posts)
+    Session.commit()
+
+    posts = Session.query(models.Post2).all()
+    return posts
