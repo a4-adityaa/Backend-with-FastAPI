@@ -7,6 +7,7 @@ from apps.Connection_Through_ORM.main import app
 from sqlalchemy.ext.declarative import declarative_base
 from apps.Connection_Through_ORM.config import settings
 from apps.Connection_Through_ORM.database import get_db, Base
+from apps.Connection_Through_ORM.oauth2 import create_access_token
 
 
 SQLALCHEMY_DATABASE_URL = f'postgresql+psycopg2://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}_test'
@@ -50,3 +51,15 @@ def test_user(client):
     new_user = res.json()
     new_user['password'] = user_data['password']
     return new_user
+
+
+@pytest.fixture
+def token(test_user):
+    return create_access_token({"user_id": test_user['id']})
+
+@pytest.fixture
+def authorized_client(client, token):
+    client.headers ={
+        **client.headers, "Authorization": f"Bearer {token}"
+    }
+    return client
