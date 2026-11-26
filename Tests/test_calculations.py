@@ -71,3 +71,7 @@ def test_bank_transction(zero_bank_account, deposited, withdrew, expected):
 def test_insufficient_fund(bank_account):
     with pytest.raises(InsufficientFunds):
         bank_account.withdraw(200)
+
+def test_unauthorized_user_get_one_post(client, test_posts):
+    res = client.get(f"/posts/{test_posts[0].id}")
+    assert res.status_code == 401
