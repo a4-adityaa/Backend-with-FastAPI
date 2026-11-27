@@ -26,3 +26,11 @@ def test_unauthorized_user_get_one_post(client, test_posts):
 def test_get_one_post_not_exist(authorized_client, test_posts):
     res = authorized_client.get(f"/posts/88888")
     assert res.status_code == 404
+
+def test_get_one_post(authorized_client, test_posts):
+    res = authorized_client.get(f"/posts/{test_posts[0].id}")
+    Post = schemas.PostOut(**res.json())
+
+    assert Post.post.id == test_posts[0].id   # the second post is comming from schemas.Postout.post
+    assert Post.post.content == test_posts[0].content
+    assert Post.post.title == test_posts[0].title
