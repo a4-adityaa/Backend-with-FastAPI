@@ -1,3 +1,4 @@
+import pytest
 from typing import List
 from apps.Connection_Through_ORM import schemas
 
@@ -34,3 +35,31 @@ def test_get_one_post(authorized_client, test_posts):
     assert Post.post.id == test_posts[0].id   # the second post is comming from schemas.Postout.post
     assert Post.post.content == test_posts[0].content
     assert Post.post.title == test_posts[0].title
+
+
+@pytest.mark.parametrize("title, content, published", [
+    ("first post title", "first post content", True),
+    ("second post title", "second post content", False),
+    ("third post title", "third post content", True),
+])
+def test_create_post(authorized_client, test_user, test_posts, title, content, published):
+    res = authorized_client.post("/posts/", json={"title": title, "content": content, "published": published})
+
+    create_post = schemas.Post(**res.json())
+
+    assert res.status_code == 201
+    assert create_post.title == title
+    assert create_post.content == content
+    assert create_post.published == published
+    assert create_post.owner_id == test_user['id']
+
+def test_create_post_default_published_true(authorized_client, test_user, test_posts):
+    res = authorized_client.post("/posts/", json={"title": "arbitary post", "content": "arbitary content"})
+    
+    create_post = schemas.Post(**res.json())
+    
+    assert res.status_code == 201
+    assert create_post.title == "arbitary post"
+    assert create_post.content == "arbitary content"
+    assert create_post.published == True
+    assert create_post.owner_id == test_user['id']
